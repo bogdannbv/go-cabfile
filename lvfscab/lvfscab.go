@@ -26,7 +26,7 @@ import (
 
 	"github.com/blang/semver"
 
-	"github.com/google/go-cabfile/cabfile"
+	"github.com/bogdannbv/go-cabfile/cabfile"
 )
 
 // LVFSCabinet provides read-only access to Cabinet files shipped by the
