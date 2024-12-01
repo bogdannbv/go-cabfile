@@ -1,4 +1,4 @@
-module github.com/google/go-cabfile
+module github.com/bogdannbv/go-cabfile
 
 go 1.11
 
