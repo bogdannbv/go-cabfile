@@ -37,12 +37,12 @@ import (
 // Cabinet provides read-only access to Microsoft Cabinet files.
 type Cabinet struct {
 	r     io.ReadSeeker
-	hdr   *cfHeader
-	fldrs []*cfFolder
+	hdr   *Header
+	fldrs []*folder
 	files []*file
 }
 
-type cfHeader struct {
+type Header struct {
 	Signature    [4]byte
 	Reserved1    uint32
 	CBCabinet    uint32 // size of this cabinet file in bytes
@@ -67,7 +67,7 @@ const (
 	hdrReservePresent
 )
 
-type cfFolder struct {
+type folder struct {
 	COFFCabStart uint32 // offset of the first CFDATA block in this folder
 	CCFData      uint16 // number of CFDATA blocks in this folder
 	TypeCompress uint16 // compression type indicator
@@ -119,7 +119,7 @@ func New(r io.ReadSeeker) (*Cabinet, error) {
 	}
 
 	// CFHEADER
-	var hdr cfHeader
+	var hdr Header
 	if err := binary.Read(r, binary.LittleEndian, &hdr.Signature); err != nil {
 		return nil, fmt.Errorf("could not deserialize header signature: %w", err)
 	}
@@ -192,9 +192,9 @@ func New(r io.ReadSeeker) (*Cabinet, error) {
 	}
 
 	// CFFOLDER
-	var fldrs []*cfFolder
+	var fldrs []*folder
 	for i := uint16(0); i < hdr.CFolders; i++ {
-		var fldr cfFolder
+		var fldr folder
 		if err := binary.Read(r, binary.LittleEndian, &fldr); err != nil {
 			return nil, fmt.Errorf("could not deserialize folder %d: %v", i, err)
 		}
@@ -297,6 +297,11 @@ func (c *Cabinet) folderData(idx uint16) (io.ReadSeeker, error) {
 		}
 	}
 	return bytes.NewReader(buf.Bytes()), nil
+}
+
+// Header returns the Cabinet file Header.
+func (c *Cabinet) Header() Header {
+	return *c.hdr
 }
 
 // Content returns the content of the file specified by its filename as an
